@@ -16,7 +16,6 @@ export async function getAllFollowers(actor: string): Promise<ProfileBasic[]> {
   // Check cache first
   const cached = getCached<ProfileBasic[]>(actor, "followers");
   if (cached) {
-    console.log(`Using cached followers for ${actor}`);
     return cached;
   }
 
@@ -52,7 +51,6 @@ export async function getAllFollows(actor: string): Promise<ProfileBasic[]> {
   // Check cache first
   const cached = getCached<ProfileBasic[]>(actor, "following");
   if (cached) {
-    console.log(`Using cached following for ${actor}`);
     return cached;
   }
 
@@ -93,7 +91,6 @@ export async function getProfile(
     "profile"
   );
   if (cached) {
-    console.log(`Using cached profile for ${actor}`);
     return cached;
   }
 

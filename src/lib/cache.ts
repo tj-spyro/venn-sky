@@ -83,7 +83,16 @@ export function setCached<T>(
   } catch (error) {
     console.error("Error writing to cache:", error);
     // If quota exceeded, try to clear old entries
-    if (error instanceof Error && error.name === "QuotaExceededError") {
+    // Check for various quota exceeded error patterns across browsers
+    const isQuotaExceeded =
+      error instanceof Error &&
+      (error.name === "QuotaExceededError" ||
+        // Firefox
+        (error as { code?: number }).code === 1014 ||
+        // Most browsers
+        (error as { code?: number }).code === 22);
+
+    if (isQuotaExceeded) {
       clearExpiredCache();
       // Try one more time after clearing
       try {
