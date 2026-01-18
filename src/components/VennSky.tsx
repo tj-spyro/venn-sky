@@ -23,6 +23,8 @@ interface UserData {
   list: ProfileBasic[];
 }
 
+const MAX_HANDLES = 5;
+
 export default function VennSky() {
   const [handles, setHandles] = useState<string[]>(["", ""]);
   const [comparisonType, setComparisonType] =
@@ -54,7 +56,7 @@ export default function VennSky() {
 
   const addUserToComparison = (handle: string) => {
     // Check if handle is already in the list
-    if (!handles.includes(handle) && handles.length < 5) {
+    if (!handles.includes(handle) && handles.length < MAX_HANDLES) {
       // Replace first empty handle or add new one
       const emptyIndex = handles.findIndex((h) => h.trim() === "");
       if (emptyIndex !== -1) {
@@ -209,7 +211,7 @@ export default function VennSky() {
                   </div>
                 ))}
               </div>
-              {handles.length < 5 && (
+              {handles.length < MAX_HANDLES && (
                 <button
                   onClick={addHandle}
                   className="mt-2 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition"
