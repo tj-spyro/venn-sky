@@ -52,6 +52,21 @@ export default function VennSky() {
     }
   };
 
+  const addUserToComparison = (handle: string) => {
+    // Check if handle is already in the list
+    if (!handles.includes(handle) && handles.length < 5) {
+      // Replace first empty handle or add new one
+      const emptyIndex = handles.findIndex((h) => h.trim() === "");
+      if (emptyIndex !== -1) {
+        const newHandles = [...handles];
+        newHandles[emptyIndex] = handle;
+        setHandles(newHandles);
+      } else {
+        setHandles([...handles, handle]);
+      }
+    }
+  };
+
   const handleAnalyze = async () => {
     const filteredHandles = handles.filter((h) => h.trim() !== "");
 
@@ -274,31 +289,43 @@ export default function VennSky() {
                 {results.overlapping.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto">
                     {results.overlapping.map((profile) => (
-                      <a
+                      <div
                         key={profile.did}
-                        href={`https://bsky.app/profile/${profile.handle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded hover:bg-green-100 dark:hover:bg-gray-700 transition"
                       >
-                        {profile.avatar && (
-                          <Image
-                            src={profile.avatar}
-                            alt={profile.handle}
-                            className="w-8 h-8 rounded-full"
-                            width={32}
-                            height={32}
-                          />
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-                            {profile.displayName || profile.handle}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            @{profile.handle}
-                          </p>
-                        </div>
-                      </a>
+                        <a
+                          href={`https://bsky.app/profile/${profile.handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 flex-1 min-w-0"
+                        >
+                          {profile.avatar && (
+                            <Image
+                              src={profile.avatar}
+                              alt={profile.handle}
+                              className="w-8 h-8 rounded-full"
+                              width={32}
+                              height={32}
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                              {profile.displayName || profile.handle}
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              @{profile.handle}
+                            </p>
+                          </div>
+                        </a>
+                        <button
+                          onClick={() => addUserToComparison(profile.handle)}
+                          className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                          title="Add to comparison"
+                          aria-label={`Add ${profile.handle} to comparison`}
+                        >
+                          +
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
