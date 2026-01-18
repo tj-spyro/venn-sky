@@ -1,4 +1,6 @@
 import { agent } from "./api";
+import { getCached, setCached } from "./cache";
+import type { AppBskyActorDefs } from "@atproto/api";
 
 export interface ProfileBasic {
   did: string;
@@ -11,6 +13,13 @@ export interface ProfileBasic {
  * Fetch all followers for a given actor with pagination
  */
 export async function getAllFollowers(actor: string): Promise<ProfileBasic[]> {
+  // Check cache first
+  const cached = getCached<ProfileBasic[]>(actor, "followers");
+  if (cached) {
+    console.log(`Using cached followers for ${actor}`);
+    return cached;
+  }
+
   const followers: ProfileBasic[] = [];
   let cursor: string | undefined = undefined;
 
@@ -26,6 +35,9 @@ export async function getAllFollowers(actor: string): Promise<ProfileBasic[]> {
       cursor = response.data.cursor;
     } while (cursor);
 
+    // Cache the results
+    setCached(actor, "followers", followers);
+
     return followers;
   } catch (error) {
     console.error(`Error fetching followers for ${actor}:`, error);
@@ -37,6 +49,13 @@ export async function getAllFollowers(actor: string): Promise<ProfileBasic[]> {
  * Fetch all follows (following) for a given actor with pagination
  */
 export async function getAllFollows(actor: string): Promise<ProfileBasic[]> {
+  // Check cache first
+  const cached = getCached<ProfileBasic[]>(actor, "following");
+  if (cached) {
+    console.log(`Using cached following for ${actor}`);
+    return cached;
+  }
+
   const follows: ProfileBasic[] = [];
   let cursor: string | undefined = undefined;
 
@@ -52,6 +71,9 @@ export async function getAllFollows(actor: string): Promise<ProfileBasic[]> {
       cursor = response.data.cursor;
     } while (cursor);
 
+    // Cache the results
+    setCached(actor, "following", follows);
+
     return follows;
   } catch (error) {
     console.error(`Error fetching follows for ${actor}:`, error);
@@ -62,10 +84,27 @@ export async function getAllFollows(actor: string): Promise<ProfileBasic[]> {
 /**
  * Get profile information for an actor
  */
-export async function getProfile(actor: string) {
+export async function getProfile(
+  actor: string
+): Promise<AppBskyActorDefs.ProfileViewDetailed> {
+  // Check cache first
+  const cached = getCached<AppBskyActorDefs.ProfileViewDetailed>(
+    actor,
+    "profile"
+  );
+  if (cached) {
+    console.log(`Using cached profile for ${actor}`);
+    return cached;
+  }
+
   try {
     const response = await agent.app.bsky.actor.getProfile({ actor });
-    return response.data;
+    const profileData = response.data;
+
+    // Cache the results
+    setCached(actor, "profile", profileData);
+
+    return profileData;
   } catch (error) {
     console.error(`Error fetching profile for ${actor}:`, error);
     throw new Error(`Failed to fetch profile for ${actor}`);
