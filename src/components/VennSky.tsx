@@ -178,6 +178,9 @@ export default function VennSky() {
                       value={handle}
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       placeholder={`Handle ${index + 1} (e.g., user.bsky.social)`}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck="false"
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     />
                     {handles.length > 2 && (
