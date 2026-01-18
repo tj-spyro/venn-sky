@@ -53,13 +53,17 @@ The app uses the AT Protocol API to:
 3. Identify users unique to each account
 4. Display results with user avatars, display names, and handles
 
+## API Rate Limits
+
+The Blue Sky public API has rate limits. For users with large follower/following counts, the analysis may take some time as the app fetches all pages of results.
+
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router)
+- **Framework**: Next.js 16 (App Router) with Static Export
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
 - **API Client**: @atproto/api (Blue Sky/AT Protocol)
-- **Deployment**: Vercel-ready
+- **Deployment**: GitHub Pages / Static Hosting
 
 ## Development
 
@@ -67,7 +71,14 @@ The app uses the AT Protocol API to:
 
 ```bash
 npm run build
-npm start
+```
+
+This creates a static export in the `out/` directory that can be deployed to any static hosting service.
+
+### Local Testing
+
+```bash
+npm run dev
 ```
 
 ### Linting
@@ -76,15 +87,30 @@ npm start
 npm run lint
 ```
 
-## API Rate Limits
+## Deployment
 
-The Blue Sky public API has rate limits. For users with large follower/following counts, the analysis may take some time as the app fetches all pages of results.
+### GitHub Pages (Automated)
 
-## Deploy on Vercel
+This repository includes a GitHub Actions workflow that automatically deploys to GitHub Pages when you push to the `main` branch.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Setup Steps:**
 
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Go to your repository Settings → Pages
+2. Under "Build and deployment", select "GitHub Actions" as the source
+3. Push to the `main` branch to trigger deployment
+4. Your app will be available at `https://<username>.github.io/<repository-name>/`
+
+### Manual Static Deployment
+
+You can deploy the static build to any hosting service:
+
+1. Build the app: `npm run build`
+2. Deploy the contents of the `out/` directory to:
+   - GitHub Pages
+   - Netlify
+   - Vercel
+   - Cloudflare Pages
+   - Any static file hosting service
 
 ## Acknowledgments
 
