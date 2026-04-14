@@ -18,7 +18,6 @@ interface HandleEntry {
 }
 
 interface UserData extends HandleEntry {
-  handle: string;
   profile?: {
     displayName?: string;
     avatar?: string;
@@ -69,8 +68,8 @@ export default function VennSky() {
     }
   };
 
-  const addUserToComparison = (handle: string) => {
-    const normalizedHandle = handle.trim();
+  const addUserToComparison = (handleToAdd: string) => {
+    const normalizedHandle = handleToAdd.trim();
 
     // Check if handle is already in the list
     if (
