@@ -4,7 +4,7 @@ A Next.js application that visualizes the overlap of followers or following betw
 
 ## Features
 
-- 🔍 Compare followers or following lists between 2 or more Blue Sky users
+- 🔍 Compare followers/following lists between 2 or more Blue Sky users, with per-user list type selection
 - 📊 View overlapping users that appear in all lists
 - 🎯 See unique users for each account
 - 🎨 Clean, modern UI with dark mode support
@@ -37,8 +37,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Usage
 
-1. Choose whether to compare **Followers** or **Following** lists
-2. Enter 2 or more Blue Sky handles (without the @ symbol)
+1. Enter 2 or more Blue Sky handles (without the @ symbol)
+2. For each handle, choose **Followers** or **Following**
    - Example: `user.bsky.social`
 3. Click "Analyze Overlap" to see the results
 4. View:
@@ -48,7 +48,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## How It Works
 
 The app uses the AT Protocol API to:
-1. Fetch the complete followers or following list for each user (with pagination)
+1. Fetch the complete followers or following list for each user (with pagination), based on that user's selected list type
 2. Calculate the intersection of all lists to find overlapping users
 3. Identify users unique to each account
 4. Display results with user avatars, display names, and handles
