@@ -12,8 +12,12 @@ import {
 
 type ComparisonType = "followers" | "following";
 
-interface UserData {
+interface HandleEntry {
   handle: string;
+  comparisonType: ComparisonType;
+}
+
+interface UserData extends HandleEntry {
   profile?: {
     displayName?: string;
     avatar?: string;
@@ -26,9 +30,10 @@ interface UserData {
 const MAX_HANDLES = 5;
 
 export default function VennSky() {
-  const [handles, setHandles] = useState<string[]>(["", ""]);
-  const [comparisonType, setComparisonType] =
-    useState<ComparisonType>("followers");
+  const [entries, setEntries] = useState<HandleEntry[]>([
+    { handle: "", comparisonType: "followers" },
+    { handle: "", comparisonType: "followers" },
+  ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<{
@@ -39,40 +44,62 @@ export default function VennSky() {
   } | null>(null);
 
   const handleInputChange = (index: number, value: string) => {
-    const newHandles = [...handles];
-    newHandles[index] = value;
-    setHandles(newHandles);
+    const newEntries = [...entries];
+    newEntries[index] = { ...newEntries[index], handle: value };
+    setEntries(newEntries);
+  };
+
+  const handleComparisonTypeChange = (
+    index: number,
+    value: ComparisonType
+  ) => {
+    const newEntries = [...entries];
+    newEntries[index] = { ...newEntries[index], comparisonType: value };
+    setEntries(newEntries);
   };
 
   const addHandle = () => {
-    setHandles([...handles, ""]);
+    setEntries([...entries, { handle: "", comparisonType: "followers" }]);
   };
 
   const removeHandle = (index: number) => {
-    if (handles.length > 2) {
-      setHandles(handles.filter((_, i) => i !== index));
+    if (entries.length > 2) {
+      setEntries(entries.filter((_, i) => i !== index));
     }
   };
 
-  const addUserToComparison = (handle: string) => {
+  const addUserToComparison = (handleToAdd: string) => {
+    const normalizedHandle = handleToAdd.trim();
+
     // Check if handle is already in the list
-    if (!handles.includes(handle) && handles.length < MAX_HANDLES) {
+    if (
+      !entries.some((entry) => entry.handle.trim() === normalizedHandle) &&
+      entries.length < MAX_HANDLES
+    ) {
       // Replace first empty handle or add new one
-      const emptyIndex = handles.findIndex((h) => h.trim() === "");
+      const emptyIndex = entries.findIndex((entry) => entry.handle.trim() === "");
       if (emptyIndex !== -1) {
-        const newHandles = [...handles];
-        newHandles[emptyIndex] = handle;
-        setHandles(newHandles);
+        const newEntries = [...entries];
+        newEntries[emptyIndex] = {
+          ...newEntries[emptyIndex],
+          handle: normalizedHandle,
+        };
+        setEntries(newEntries);
       } else {
-        setHandles([...handles, handle]);
+        setEntries([
+          ...entries,
+          { handle: normalizedHandle, comparisonType: "followers" },
+        ]);
       }
     }
   };
 
   const handleAnalyze = async () => {
-    const filteredHandles = handles.filter((h) => h.trim() !== "");
+    const filteredEntries = entries
+      .filter((entry) => entry.handle.trim() !== "")
+      .map((entry) => ({ ...entry, handle: entry.handle.trim() }));
 
-    if (filteredHandles.length < 2) {
+    if (filteredEntries.length < 2) {
       setError("Please enter at least 2 Blue Sky handles");
       return;
     }
@@ -84,16 +111,17 @@ export default function VennSky() {
     try {
       const userData: UserData[] = [];
 
-      for (const handle of filteredHandles) {
+      for (const entry of filteredEntries) {
         try {
-          const profile = await getProfile(handle);
+          const profile = await getProfile(entry.handle);
           const list =
-            comparisonType === "followers"
-              ? await getAllFollowers(handle)
-              : await getAllFollows(handle);
+            entry.comparisonType === "followers"
+              ? await getAllFollowers(entry.handle)
+              : await getAllFollows(entry.handle);
 
           userData.push({
-            handle,
+            handle: entry.handle,
+            comparisonType: entry.comparisonType,
             profile: {
               displayName: profile.displayName,
               avatar: profile.avatar,
@@ -103,7 +131,7 @@ export default function VennSky() {
             list,
           });
         } catch {
-          throw new Error(`Failed to fetch data for @${handle}`);
+          throw new Error(`Failed to fetch data for @${entry.handle}`);
         }
       }
 
@@ -149,50 +177,14 @@ export default function VennSky() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Comparison Type
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="followers"
-                    checked={comparisonType === "followers"}
-                    onChange={(e) =>
-                      setComparisonType(e.target.value as ComparisonType)
-                    }
-                    className="mr-2"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Followers
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="following"
-                    checked={comparisonType === "following"}
-                    onChange={(e) =>
-                      setComparisonType(e.target.value as ComparisonType)
-                    }
-                    className="mr-2"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Following
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Blue Sky Handles (without @)
+                Blue Sky Handles (without @) and List Type
               </label>
               <div className="space-y-2">
-                {handles.map((handle, index) => (
+                {entries.map((entry, index) => (
                   <div key={index} className="flex gap-2">
                     <input
                       type="text"
-                      value={handle}
+                      value={entry.handle}
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       placeholder={`Handle ${index + 1} (e.g., user.bsky.social)`}
                       autoCapitalize="none"
@@ -200,7 +192,20 @@ export default function VennSky() {
                       spellCheck="false"
                       className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     />
-                    {handles.length > 2 && (
+                    <select
+                      value={entry.comparisonType}
+                      onChange={(e) =>
+                        handleComparisonTypeChange(
+                          index,
+                          e.target.value as ComparisonType
+                        )
+                      }
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+                    >
+                      <option value="followers">Followers</option>
+                      <option value="following">Following</option>
+                    </select>
+                    {entries.length > 2 && (
                       <button
                         onClick={() => removeHandle(index)}
                         className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -211,7 +216,7 @@ export default function VennSky() {
                   </div>
                 ))}
               </div>
-              {handles.length < MAX_HANDLES && (
+              {entries.length < MAX_HANDLES && (
                 <button
                   onClick={addHandle}
                   className="mt-2 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition"
@@ -246,7 +251,7 @@ export default function VennSky() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {results.users.map((user, index) => (
                 <div
-                  key={user.handle}
+                  key={`${user.handle}-${user.comparisonType}-${index}`}
                   className="p-4 bg-blue-50 dark:bg-gray-700 rounded-lg"
                 >
                   <div className="flex items-center gap-3 mb-2">
@@ -270,7 +275,10 @@ export default function VennSky() {
                   </div>
                   <div className="text-sm text-gray-700 dark:text-gray-300">
                     <p>
-                      {comparisonType === "followers" ? "Followers" : "Following"}:{" "}
+                      {user.comparisonType === "followers"
+                        ? "Followers"
+                        : "Following"}
+                      :{" "}
                       <span className="font-semibold">{results.counts[index]}</span>
                     </p>
                   </div>
