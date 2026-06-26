@@ -36,6 +36,7 @@ export default function VennSky() {
   ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedUnique, setExpandedUnique] = useState<Set<number>>(new Set());
   const [results, setResults] = useState<{
     users: UserData[];
     overlapping: ProfileBasic[];
@@ -359,7 +360,7 @@ export default function VennSky() {
                           Unique to @{user.handle} ({uniqueList.length})
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                          {uniqueList.slice(0, 50).map((profile) => (
+                          {(expandedUnique.has(index) ? uniqueList : uniqueList.slice(0, 50)).map((profile) => (
                             <a
                               key={profile.did}
                               href={`https://bsky.app/profile/${profile.handle}`}
@@ -387,10 +388,13 @@ export default function VennSky() {
                             </a>
                           ))}
                         </div>
-                        {uniqueList.length > 50 && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        {uniqueList.length > 50 && !expandedUnique.has(index) && (
+                          <button
+                            onClick={() => setExpandedUnique((prev) => new Set(prev).add(index))}
+                            className="text-sm text-blue-600 dark:text-blue-400 hover:underline mt-2 cursor-pointer"
+                          >
                             ... and {uniqueList.length - 50} more
-                          </p>
+                          </button>
                         )}
                       </div>
                     );
